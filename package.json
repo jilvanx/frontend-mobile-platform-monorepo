@@ -1,0 +1,38 @@
+{
+  "name": "profiles-monorepo",
+  "private": true,
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "overrides": {
+    "react": "19.1.0",
+    "react-native": "0.81.1"
+  },
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "build:fresh": "turbo run build --force",
+    "dev": "turbo run dev",
+    "dev:next": "npm run dev -w web-next",
+    "dev:spa": "npm run dev -w web-spa",
+    "dev:mobile": "npm run start -w mobile",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rimraf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.0",
+    "rimraf": "^5.0.5",
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
