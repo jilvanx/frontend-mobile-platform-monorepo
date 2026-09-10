@@ -1,4 +1,4 @@
-function ProfileSkeleton() {
+export function ProductSkeleton() {
   return (
     <div className="rounded-lg overflow-hidden bg-white shadow animate-pulse">
       <div className="w-full aspect-square bg-slate-200" />
@@ -16,8 +16,10 @@ export function SkeletonGrid() {
       aria-hidden="true"
     >
       {Array.from({ length: 8 }, (_, i) => (
-        <ProfileSkeleton key={i} />
+        <ProductSkeleton key={i} />
       ))}
     </div>
   );
 }
+
+export const ProfileSkeleton = ProductSkeleton;

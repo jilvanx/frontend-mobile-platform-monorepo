@@ -1,142 +1,124 @@
-# Profiles Monorepo
+# Products Monorepo
 
-Monorepo containing three applications that share a common TypeScript package for fetching and displaying user profile images. Built with Turborepo + npm workspaces.
+A multi-app frontend monorepo sharing a centralized TypeScript library for fetching and rendering secure product thumbnails from DummyJSON. Built with **Turborepo** and **npm workspaces**.
 
-## Project overview
+## Project Overview
 
-- **apps/web-next** – Next.js 14 (App Router), server-side rendering, SEO metadata, `next/image` optimization.
-- **apps/web-spa** – Vite + React SPA, client-side rendering with a dev proxy for CORS.
-- **apps/mobile** – React Native (Expo SDK 54), reuses `@repo/shared`; no CORS restrictions in native.
-- **packages/shared** – Framework-agnostic TypeScript library: types, parser, `fetchProfiles()`, `buildProfileImageUrl()`.
+- **`apps/web-next`**: Next.js 14 (App Router) with SSR, SEO metadata, `next/image` optimization, and route handlers.
+- **`apps/web-spa`**: Vite + React SPA with client-side rendering and graceful image fallbacks.
+- **`apps/mobile`**: React Native (Expo SDK 54) mobile app with native components and custom hook (`useProducts`).
+- **`packages/shared`**: Framework-agnostic TypeScript core providing types, API client, defensive parser, image builders, and centralized HTTPS security configuration.
 
-Data source: `GET https://www.hunqz.com/api/opengrid/profiles/msescortplus`
-Image URL pattern: `https://www.hunqz.com/img/usr/original/0x0/{url_token}.jpg`
+**Data Source:** `GET https://dummyjson.com/products`  
+**Image URL Pattern:** `https://cdn.dummyjson.com/...` (First product thumbnail with HTTPS enforcement)
 
-## Monorepo structure
+---
+
+## Monorepo Structure
 
 ```
 apps/
-  web-next/       Next.js SSR app
-  web-spa/        Vite React SPA
-  mobile/         React Native (Expo) app
+  web-next/       Next.js SSR app (ProductCard, ProductGrid, /api/products)
+  web-spa/        Vite React SPA (ProductCard, SkeletonGrid)
+  mobile/         React Native Expo app (ProductCard, ProductGrid, useProducts)
 packages/
-  shared/         Shared TS library (types, parser, api, image URL)
+  shared/         Core TS library (config, types, parser, api, image URL)
 package.json      workspaces: ["apps/*", "packages/*"]
-turbo.json        Turborepo task config
+turbo.json        Turborepo task orchestration
 tsconfig.base.json
-.eslintrc.cjs     (per-package ESLint configs)
-.prettierrc       Code formatting
-.nvmrc            Node version
+.eslintrc.cjs
+.prettierrc
+.nvmrc
 ```
+
+---
 
 ## Tooling
 
-| Tool               | Purpose                                                             |
-| ------------------ | ------------------------------------------------------------------- |
-| **npm workspaces** | Dependency management; `@repo/shared` linked via workspace protocol |
-| **Turborepo**      | Cached, dependency-aware task orchestration                         |
-| **TypeScript**     | Type safety across all packages                                     |
-| **ESLint**         | Linting (per-package configs, `next/core-web-vitals` for Next.js)   |
-| **Prettier**       | Consistent code formatting                                          |
-| **Vitest**         | Unit tests for shared package                                       |
-| **Tailwind CSS**   | Styling for both web apps                                           |
+| Tool | Purpose |
+| --- | --- |
+| **npm workspaces** | Dependency management & local `@repo/shared` linking |
+| **Turborepo** | Cached, dependency-aware build & test orchestration |
+| **TypeScript** | Strict type safety across all packages |
+| **ESLint & Prettier** | Code quality, linting, and formatting |
+| **Vitest** | Unit and security test suite for `@repo/shared` |
+| **Tailwind CSS** | Design system & utility styling for web apps |
 
-## Shared package (`packages/shared`)
+---
 
-**Exports:** `Profile`, `FetchProfilesOptions`, `buildProfileImageUrl()`, `parseProfile()`, `parseProfilesResponse()`, `fetchProfiles()`.
+## Shared Package (`@repo/shared`)
 
-Design decisions:
+### Exports
+- **Data Models:** `Product`, `FetchProductsOptions` (with backwards-compatible `Profile` aliases).
+- **Security & Config:** `API_HOST`, `API_BASE_URL`, `DEFAULT_BASE_URL`, `ALLOWED_IMAGE_HOSTS`, `API_ENDPOINTS`, `isSecureUrl()`.
+- **Helpers & API:** `buildProductImageUrl()`, `parseProduct()`, `parseProductsResponse()`, `fetchProducts()`.
 
-- No React or framework imports – pure TypeScript, usable anywhere.
-- `fetchProfiles(slug, { baseUrl?, fetchImpl? })` accepts an injectable `fetch` implementation and configurable base URL, making it easy to test and to route through proxies.
-- Defensive parsing: handles `url_token` / `urlToken`, array or `{ profiles: [] }` responses, and the hunqz single-profile shape with `pictures` array.
+### Key Design Decisions
+- **Centralized Security (`config.ts`):** Enforces HTTPS to prevent unencrypted transmissions and tampering. Includes URL validation utilities.
+- **Defensive Parser (`parser.ts`):** Safely extracts the first thumbnail (`thumbnail` / `images[0]`), handling diverse payload shapes and fallbacks.
+- **Image URL Builder (`imageUrl.ts`):** Upgrades insecure `http://` image references to `https://` and safely formats relative asset tokens.
+- **Pure TypeScript:** Zero framework runtime dependencies; portable across Node.js, Web, and React Native.
 
-## CORS handling
+---
 
-| App            | Strategy                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Next.js**    | Data fetched in async server components (Node.js runtime) – no browser CORS.                                                          |
-| **SPA (dev)**  | Vite dev server proxies `/api/profiles` → `https://www.hunqz.com/api/opengrid/profiles`                                               |
-| **SPA (prod)** | Can point `VITE_API_BASE` to a deployed proxy. The Next.js app also exposes `/api/profiles/[slug]` as a CORS-friendly proxy endpoint. |
-| **Mobile**     | React Native `fetch` is not subject to browser CORS policy. Direct API calls.                                                         |
+## CORS & API Handling
 
-The Next.js API route (`app/api/profiles/[slug]/route.ts`) serves as a reusable proxy endpoint with caching headers, usable by the SPA in production or any other client.
+| Application | Strategy |
+| --- | --- |
+| **Next.js** | Data fetched in async server components (`Node.js` runtime) — no browser CORS. |
+| **SPA (dev & prod)** | Direct fetch to CORS-enabled `https://dummyjson.com/products` (optional Vite `/api/products` proxy). |
+| **Mobile** | Native networking bypasses browser CORS policies for direct API consumption. |
 
-## SSR and SEO (Next.js)
+The Next.js route handler (`app/api/products/[slug]/route.ts`) provides a server-side proxy with caching headers (`Cache-Control: public, s-maxage=300, stale-while-revalidate=600`).
 
-- **Server components:** async page component fetches data on the server.
-- **`next/image`:** optimized images with remote patterns, lazy loading, responsive `srcSet`.
-- **Metadata:** `title`, `description`, `openGraph`, `twitter` card, `robots`, `viewport`.
-- **Loading/Error states:** `loading.tsx` (skeleton UI during Suspense) and `error.tsx` (error boundary with retry).
-- **Accessibility:** skip-to-content link, semantic HTML (`<main>`, headings, lists), `alt` text, `aria-label`, focus indicators.
+---
 
-## Setup
+## Getting Started
 
-**Prerequisites:** Node 18+ (npm 7+ for workspaces). See `.nvmrc`.
+### Prerequisites
+- Node.js 18+ (see `.nvmrc`)
+- npm 7+
 
-On a fresh clone, `@repo/shared` is not usable until its build output exists (the `dist/` folder is gitignored). Do both steps:
-
+### Installation & Build
 ```bash
+# Install dependencies
 npm install
-npm run build -w @repo/shared
-# or, to build everything:  npm run build
+
+# Build shared package and all apps
+npm run build
 ```
 
-If the build reports cache issues on a new machine, run with cache disabled: `npm run build:fresh` (or `turbo run build --force`).
+### Development Servers
+```bash
+npm run dev           # Start all applications concurrently
+npm run dev:next      # Next.js app (http://localhost:3000)
+npm run dev:spa       # Vite React SPA (http://localhost:5173)
+npm run dev:mobile    # Expo dev server (press 'w' for web, 'a' for Android, 'i' for iOS)
+```
 
-Then run any app (`npm run dev:next`, `npm run dev:spa`, `npm run dev:mobile`).
+---
 
-## Run commands
-
-| Command                | Description                                                   |
-| ---------------------- | ------------------------------------------------------------- |
-| `npm run dev`          | Start all apps in dev mode (Turbo)                            |
-| `npm run dev:next`     | Next.js only (`http://localhost:3000`)                        |
-| `npm run dev:spa`      | Vite SPA only (`http://localhost:5173`)                       |
-| `npm run dev:mobile`   | Expo dev server – scan QR with Expo Go or press **w** for web |
-| `npm run build`        | Build shared + web apps                                       |
-| `npm run test`         | Run all tests                                                 |
-| `npm run lint`         | Lint all packages                                             |
-| `npm run format`       | Format all files with Prettier                                |
-| `npm run format:check` | Check formatting without writing                              |
-
-## Tests
+## Testing & Quality Assurance
 
 ```bash
-npm run test                   # All packages via Turbo
-npm run test -w @repo/shared   # Shared package only
+npm run test          # Run all Vitest suites
+npm run lint          # Lint all packages
+npm run format        # Format with Prettier
+npm run format:check  # Verify formatting compliance
 ```
 
-Tests cover:
+### Test Coverage (`packages/shared/src/`)
+- `config.test.ts`: Endpoint configuration, allowed image hosts, HTTPS validation.
+- `imageUrl.test.ts`: URL building, HTTPS upgrade, whitespace trimming, edge cases.
+- `parser.test.ts`: DummyJSON products parsing, thumbnail extraction, fallback handling.
+- `api.test.ts`: Fetch mocking, slug resolution, custom base URLs, error handling.
 
-- `imageUrl.test.ts` – URL construction, whitespace trimming, edge cases
-- `parser.test.ts` – valid/invalid profiles, array/object responses, hunqz API shape with `pictures`
-- `api.test.ts` – fetch mocking, error handling, custom base URL
+---
 
-## Accessibility
+## Accessibility & Performance
 
-- Semantic HTML structure: `<main>`, headings, `<ul>` with `role="list"`
-- Focus indicators (ring styles) on interactive elements
-- Skip-to-content link in Next.js layout
-- Descriptive `alt` text on all images
-- `role="status"` and `role="alert"` for loading/error states
-- `aria-live="polite"` for dynamic content updates in SPA
-- Responsive grid: 2 columns → 3 → 4 on larger screens
-
-## Mobile (Expo / React Native)
-
-The mobile app reuses `@repo/shared` directly. Metro bundler is configured to resolve workspace packages from the monorepo root.
-
-```bash
-npm run dev:mobile
-```
-
-- Scan the QR code with Expo Go (SDK 54)
-- Press **a** for Android emulator, **i** for iOS simulator, **w** for web
-
-## Trade-offs and possible improvements
-
-- **E2E tests:** Only the shared package has unit tests. Adding Playwright or Cypress for the web apps would improve confidence.
-- **Caching:** The Next.js server component could use `revalidate` for ISR. The API proxy route already sets `Cache-Control` headers.
-- **SPA production deployment:** In production, set `VITE_API_BASE` to the deployed Next.js API proxy URL, or deploy a standalone proxy.
-- **Image error handling:** A fallback placeholder for broken image URLs would improve robustness.
+- **Semantic HTML:** `<main>`, headings, `<ul>` with `role="list"`, descriptive `alt` tags.
+- **Keyboard & Focus:** Visible focus rings on all interactive elements; skip-to-content links.
+- **Responsive Layout:** Adaptive grid layout (2 cols on mobile → 3 on tablet → 4 on desktop).
+- **Next.js Image Optimization:** Automatic WebP/AVIF compression and responsive `srcSet` generation.
+- **Fallback Handling:** Visual skeleton loaders and graceful placeholder states for broken images.

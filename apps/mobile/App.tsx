@@ -1,11 +1,11 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { ProfileGrid } from "./components";
+import { ProductGrid } from "./components";
 import { DISPLAY_LIMIT } from "./config";
-import { useProfiles } from "./hooks/useProfiles";
+import { useProducts } from "./hooks/useProducts";
 
 export default function App() {
-  const { profiles, loading, error } = useProfiles();
+  const { products, loading, error } = useProducts();
 
   if (loading) {
     return (
@@ -26,23 +26,23 @@ export default function App() {
     );
   }
 
-  if (profiles.length === 0) {
+  if (products.length === 0) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.subtitle}>No profiles to show.</Text>
+        <Text style={styles.subtitle}>No products to show.</Text>
         <StatusBar style="auto" />
       </View>
     );
   }
 
-  const listData = profiles.slice(0, DISPLAY_LIMIT);
+  const listData = products.slice(0, DISPLAY_LIMIT);
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <Text style={styles.title}>Profiles</Text>
+      <Text style={styles.title}>Products</Text>
       <Text style={styles.subtitle}>React Native – same shared module as web apps.</Text>
-      <ProfileGrid profiles={listData} />
+      <ProductGrid products={listData} />
     </View>
   );
 }

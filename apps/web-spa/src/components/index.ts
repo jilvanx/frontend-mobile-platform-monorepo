@@ -1,2 +1,2 @@
-export { ProfileCard } from "./ProfileCard";
-export { SkeletonGrid } from "./ProfileSkeleton";
+export { ProductCard, ProfileCard } from "./ProductCard";
+export { SkeletonGrid, ProductSkeleton, ProfileSkeleton } from "./ProductSkeleton";

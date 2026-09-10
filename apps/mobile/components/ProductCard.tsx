@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import { buildProfileImageUrl } from "@repo/shared";
-import type { Profile } from "@repo/shared";
+import { buildProductImageUrl } from "@repo/shared";
+import type { Product } from "@repo/shared";
 
-export function ProfileCard({ profile }: { profile: Profile }) {
-  const uri = buildProfileImageUrl(profile.urlToken);
-  const accessibilityLabel = profile.name
-    ? `Profile photo for ${profile.name}`
-    : `Profile ${profile.urlToken}`;
+export function ProductCard({ product }: { product: Product }) {
+  const [, setImgError] = useState(false);
+  const rawSrc = product.thumbnail || product.urlToken;
+  const uri = buildProductImageUrl(rawSrc);
+  const accessibilityLabel = product.name
+    ? `Product photo for ${product.name}`
+    : `Product ${product.urlToken}`;
 
   return (
     <View style={styles.card}>
@@ -15,15 +18,18 @@ export function ProfileCard({ profile }: { profile: Profile }) {
         style={styles.image}
         resizeMode="cover"
         accessibilityLabel={accessibilityLabel}
+        onError={() => setImgError(true)}
       />
-      {profile.name ? (
+      {product.name ? (
         <Text style={styles.name} numberOfLines={1}>
-          {profile.name}
+          {product.name}
         </Text>
       ) : null}
     </View>
   );
 }
+
+export const ProfileCard = ProductCard;
 
 const styles = StyleSheet.create({
   card: {

@@ -1,19 +1,23 @@
-import { parseProfilesResponse } from "./parser.js";
-import type { Profile } from "./types.js";
-import type { FetchProfilesOptions } from "./types.js";
+import { DEFAULT_BASE_URL } from "./config.js";
+import { parseProductsResponse } from "./parser.js";
+import type { FetchProductsOptions, Product } from "./types.js";
 
-const DEFAULT_BASE_URL = "https://www.hunqz.com/api/opengrid/profiles";
-
-export async function fetchProfiles(
-  slug: string,
-  options: FetchProfilesOptions = {}
-): Promise<Profile[]> {
+export async function fetchProducts(
+  slug?: string,
+  options: FetchProductsOptions = {}
+): Promise<Product[]> {
   const { baseUrl = DEFAULT_BASE_URL, fetchImpl = fetch } = options;
-  const url = `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(slug)}`;
+  const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+  const trimmedSlug = slug ? slug.trim() : "";
+  const url = trimmedSlug
+    ? `${cleanBaseUrl}/${encodeURIComponent(trimmedSlug)}`
+    : cleanBaseUrl;
   const res = await fetchImpl(url);
   if (!res.ok) {
-    throw new Error(`Profiles fetch failed: ${res.status} ${res.statusText}`);
+    throw new Error(`Products fetch failed: ${res.status} ${res.statusText}`);
   }
   const json = await res.json();
-  return parseProfilesResponse(json);
+  return parseProductsResponse(json);
 }
+
+export const fetchProfiles = fetchProducts;

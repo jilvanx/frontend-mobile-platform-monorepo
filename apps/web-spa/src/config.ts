@@ -1,5 +1,5 @@
-export const SLUG = "msescortplus";
+import { DEFAULT_BASE_URL } from "@repo/shared";
 
-export const API_BASE =
-  import.meta.env.VITE_API_BASE ??
-  (import.meta.env.DEV ? "/api/profiles" : "https://www.hunqz.com/api/opengrid/profiles");
+export const SLUG = "";
+
+export const API_BASE = import.meta.env.VITE_API_BASE ?? DEFAULT_BASE_URL;

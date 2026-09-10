@@ -5,8 +5,13 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "www.hunqz.com",
-        pathname: "/img/usr/original/**",
+        hostname: "cdn.dummyjson.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "dummyjson.com",
+        pathname: "/**",
       },
     ],
   },

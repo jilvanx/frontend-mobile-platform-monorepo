@@ -1,2 +1,2 @@
-export const SLUG = "msescortplus";
+export const SLUG = "";
 export const DISPLAY_LIMIT = 8;

@@ -8,21 +8,21 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Profiles | Next.js",
+  title: "Products | Next.js",
   description:
-    "Browse user profiles with server-rendered pages. Fast, accessible, and SEO-friendly.",
+    "Browse products with server-rendered pages. Fast, accessible, and SEO-friendly.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    title: "Profiles | Next.js",
+    title: "Products | Next.js",
     description:
-      "Browse user profiles with server-rendered pages. Fast, accessible, and SEO-friendly.",
-    siteName: "Profiles",
+      "Browse products with server-rendered pages. Fast, accessible, and SEO-friendly.",
+    siteName: "Products",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Profiles | Next.js",
-    description: "Browse user profiles with server-rendered pages.",
+    title: "Products | Next.js",
+    description: "Browse products with server-rendered pages.",
   },
 };
 

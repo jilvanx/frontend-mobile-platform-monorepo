@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api/profiles": {
-        target: "https://www.hunqz.com",
+      "/api/products": {
+        target: "https://dummyjson.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/profiles/, "/api/opengrid/profiles"),
+        rewrite: (path) => path.replace(/^\/api\/products/, "/products"),
       },
     },
   },
